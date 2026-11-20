@@ -78,10 +78,12 @@ Odd things that need checking:
    the production side.
 4. **Gen cuts**: are they consistent across processes (needed for the SM cocktail)? Probably
    answered by the same cards as Q1.
-5. **Classes vs processes**: who defines the class mapping?
-9. **Train/val/test splits**.
-10. **EOS access**: FUSE vs XRootD.
-11. Framework targets, Python version, packaging, license.
+11. Python version, packaging, license (the repo belongs to the lab org, so the lab decides).
+
+### Decided 2026-11-20 (see §5)
+
+5. Classes: YAML grouping with a shipped default. 9. Splits: by file, seeded.
+10. EOS: fsspec (FUSE + XRootD). 11a. Frameworks: NumPy core + PyTorch adapter.
 
 ## 4. Rough architecture (draft, to discuss)
 
@@ -104,3 +106,7 @@ Odd things that need checking:
 | 2026-11-20 | Primary output is padded tensors + masks | Ready to use for ML/preprocessing |
 | 2026-11-20 | EOS first, behind a storage-backend interface. HF is added later | HF upload not done yet |
 | 2026-11-20 | Cross sections come from a shipped `xsec.yaml`, not from parquet columns | The per-event σ columns aren't usable (§2) |
+| 2026-11-20 | Classes = YAML grouping of process folders, with a shipped default. Binned samples are merged by σ inside a class | Users regroup without touching code. DY/QCD bins always need σ-merging anyway |
+| 2026-11-20 | Splits are made per file, assigned by hash(filename, seed), with configurable fractions | 1 row group/file makes event-level splits expensive. Works the same on HF |
+| 2026-11-20 | Storage through fsspec: local/FUSE paths and `root://` (XRootD). `hf://` is added later | Works with or without the mount. The same interface covers HF |
+| 2026-11-20 | Core yields NumPy (padded + masks). Thin torch `IterableDataset` adapter on top | Not tied to one framework. JAX can use the NumPy output directly |
